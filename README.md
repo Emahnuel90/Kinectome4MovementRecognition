@@ -17,19 +17,19 @@ Troisi Lopez, E., Minino, R., De Luca, M., Tafuri, F., Sorrentino, G., Sorrentin
 * Francesco Tafuri, Heracle Lab Research in Educational Neuroscience, Niccolò Cusano University, 00166 Rome, Italy
 * Giuseppe Sorrentino, Department of Economics, Law, Cybersecurity and Sports Sciences, University of Naples “Parthenope”, 80035 Nola, Italy
 * Pierpaolo Sorrentino, Aix Marseille University, INSERM, INS, Institut de Neurosciences des Systèmes, 13007, Marseille, France
-* Sorbonne Université, Institut du Cerveau—Paris Brain Institute—ICM, CNRS, Inria, Inserm, AP-HP, Hôpital de la Pitié Salpêtrière, F-75013 Paris, France
+* Marie-Constance Corsi, Sorbonne Université, Institut du Cerveau—Paris Brain Institute—ICM, CNRS, Inria, Inserm, AP-HP, Hôpital de la Pitié Salpêtrière, F-75013 Paris, France
 
 
 ---
 ## Abstract
-Introduction
-automatic movement recognition is often used to support various fields such as clinical, sports, and security. To date, there is a lack of a classification feature that is both interpretable and not movement-specific, characteristics that would enhance generalization and adaptability. Previous studies on motion analysis have shown that coordination properties extracted from full-body movement using network theory can describe specific movement characteristics, making coordination a potential feature for classification.
-Methods
-therefore, we leveraged kinematic data from 168 individuals performing 30 different movements, published in an online dataset. Using network theory, we reduced data dimensionality, obtaining a coordination matrix called the kinectome. By applying support vector machine algorithms, we compared the classification performance of the kinectome with that of principal component analysis, used as an alternative data reduction method.
-Results
-the classification accuracy of the kinectome (0.99 ± 0.01) was significantly higher (pFDR < 0.001) than that of PCA (0.96 ± 0.04). Moreover, unlike PCA, the kinectome demonstrated resilience to data loss, robustness to derived measures, independence from the classification algorithm, and clear interpretability of features.
-Discussion
-our results suggest that kinnectome-based features could capture interpretable changes between movements that could pave the way to new automatic movement recognition approaches dedicated to a wide range of applications, in particular sport training and physical readaptation, and designed for non-data scientists experts.
+*Introduction*
+Automatic movement recognition is often used to support various fields such as clinical, sports, and security. To date, there is a lack of a classification feature that is both interpretable and not movement-specific, characteristics that would enhance generalization and adaptability. Previous studies on motion analysis have shown that coordination properties extracted from full-body movement using network theory can describe specific movement characteristics, making coordination a potential feature for classification.
+*Methods*
+Therefore, we leveraged kinematic data from 168 individuals performing 30 different movements, published in an online dataset. Using network theory, we reduced data dimensionality, obtaining a coordination matrix called the kinectome. By applying support vector machine algorithms, we compared the classification performance of the kinectome with that of principal component analysis, used as an alternative data reduction method.
+*Results*
+The classification accuracy of the kinectome (0.99 ± 0.01) was significantly higher (pFDR < 0.001) than that of PCA (0.96 ± 0.04). Moreover, unlike PCA, the kinectome demonstrated resilience to data loss, robustness to derived measures, independence from the classification algorithm, and clear interpretability of features.
+*Discussion*
+Our results suggest that kinnectome-based features could capture interpretable changes between movements that could pave the way to new automatic movement recognition approaches dedicated to a wide range of applications, in particular sport training and physical readaptation, and designed for non-data scientists experts.
 
 
 ---
