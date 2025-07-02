@@ -35,19 +35,35 @@ function T = movement_classification_kinectome_vs_PCA(data, labels)
 % The function outputs confusion matrices and computes summary statistics of the
 % classification accuracy for both approaches, returning a table formatted for
 % publication or reporting.
-
 % -------------------------------------------------------------------------
-% Authors: Emahnuel Troisi Lopez, Marie-Constance Corsi
+% 
+% The data on which the analyses in the manuscript are based were published
+% by Zhao et al. and are publicly available on Science Data here:
+% https://www.nature.com/articles/s41597-023-02082-6
+% Zhao, X., Ross, G., Dowling, B. et al. Three-Dimensional Motion Capture
+% Data of a Movement Screen from 183 Athletes. Sci Data 10, 235 (2023).
+%
+% Please note that the data contained in the dataset cannot be directly
+% used with this code, as they were first subjected to steps of visual
+% inspection, removal of poor-quality data, and preprocessing, as described
+% in the manuscript.
+% -------------------------------------------------------------------------
+%
+% This repository contains the code and supporting documents associated
+% with the following manuscript: https://doi.org/10.1101/2025.02.27.640538
+% Please cite as:
+% Troisi Lopez, E., Minino, R., De Luca, M., Tafuri, F., Sorrentino, G.,
+% Sorrentino, P., & Corsi, M. C. (2025). Artificial Intelligence for
+% automatic movement recognition: a network-based approach. bioRxiv,2025-02
+%
+% -------------------------------------------------------------------------
+% Authors: Emahnuel Troisi Lopez, Marie-Constance Corsi, Mario De Luca
 % Date:    20/06/2025
 % License: Creative Commons Attribution 4.0 International (CC BY 4.0)
 %          https://creativecommons.org/licenses/by/4.0/
 %
 % You are free to share and adapt the code, even for commercial purposes,
 % as long as proper credit is given.
-% -------------------------------------------------------------------------
-% LINK AL DATASET
-%
-% LINK AD ARXIV
 
 %% Further optional settings
 %choosing the number of k-folds for cross-validation
@@ -184,14 +200,14 @@ axis square
 
 %Visual output
 figure
-ConfMat = confusionchart(Y_shuffle, PCApred);
-ConfMat.RowSummary = 'row-normalized';
-title([' PCA - SVM - shuffle | variance: ' num2str(exp_var)])
-
-figure
 ConfMat = confusionchart(Y_shuffle, KINpred);
 ConfMat.RowSummary = 'row-normalized';
 title(' KIN - SVM - shuffle')
+
+figure
+ConfMat = confusionchart(Y_shuffle, PCApred);
+ConfMat.RowSummary = 'row-normalized';
+title([' PCA - SVM - shuffle | variance: ' num2str(exp_var)])
 
 mean_accu = mean(ACCU_PCA_sep);
 median_accu = median(ACCU_PCA_sep);
