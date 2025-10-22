@@ -2,8 +2,10 @@
 ---
 This repository contains the code and supporting documents associated with the following manuscript:
 
-- OA access: https://doi.org/10.1101/2025.02.27.640538
+**- Please note: the manuscript is under review - the script (but not the figures) will be promptly updated accordin to the revision.**
+**- To date, the script includes analysis with UMAP too (which are not part of the preprint version) - Figures, descriptions and link to the peer-reviewed version of the manuscript will be updated once the manuscript is published.**
 
+- OA access: https://doi.org/10.1101/2025.02.27.640538
 Please cite as:
 
 Troisi Lopez, E., Minino, R., De Luca, M., Tafuri, F., Sorrentino, G., Sorrentino, P., & Corsi, M. C. (2025). Artificial Intelligence for automatic movement recognition: a network-based approach. bioRxiv, 2025-02.
@@ -22,14 +24,7 @@ Troisi Lopez, E., Minino, R., De Luca, M., Tafuri, F., Sorrentino, G., Sorrentin
 
 ---
 ## Abstract
-*Introduction*
-Automatic movement recognition is often used to support various fields such as clinical, sports, and security. To date, there is a lack of a classification feature that is both interpretable and not movement-specific, characteristics that would enhance generalization and adaptability. Previous studies on motion analysis have shown that coordination properties extracted from full-body movement using network theory can describe specific movement characteristics, making coordination a potential feature for classification.
-*Methods*
-Therefore, we leveraged kinematic data from 168 individuals performing 30 different movements, published in an online dataset. Using network theory, we reduced data dimensionality, obtaining a coordination matrix called the kinectome. By applying support vector machine algorithms, we compared the classification performance of the kinectome with that of principal component analysis, used as an alternative data reduction method.
-*Results*
-The classification accuracy of the kinectome (0.99 ± 0.01) was significantly higher (pFDR < 0.001) than that of PCA (0.96 ± 0.04). Moreover, unlike PCA, the kinectome demonstrated resilience to data loss, robustness to derived measures, independence from the classification algorithm, and clear interpretability of features.
-*Discussion*
-Our results suggest that kinnectome-based features could capture interpretable changes between movements that could pave the way to new automatic movement recognition approaches dedicated to a wide range of applications, in particular sport training and physical readaptation, and designed for non-data scientists experts.
+Automatic movement recognition is often used to support various fields such as clinical, sports, and security. To date, there is a lack of a classification feature that is both interpretable and not movement-specific. Previous studies on motion analysis have shown that coordination properties extracted using network theory can describe specific movement characteristics, making coordination a potential feature for classification. Hence, we leveraged kinematic data from 168 individuals performing 30 different movements, published in an online dataset and compared features extracted using network theory (kinectomes) to the ones extracted using principal component analysis (PCA). The classification accuracy of the kinectome (0.99 ± 0.01) was significantly higher (p < 0.001) than that of PCA (0.96 ± 0.04), but not significantly different from UMAP (0.98 ± 0.02, p = 0.314). Our results show that both kinectome- and UMAP-based features achieve high classification accuracy. However, kinectomes provide the key advantage of interpretability, enabling anatomically and functionally meaningful insights into movement patterns.
 
 
 ---
@@ -41,7 +36,7 @@ Zhao, X., Ross, G., Dowling, B. et al. Three-Dimensional Motion Capture Data of 
 
 
 ## Code
-This repository contains the MATLAB code used to run the classification analysis performed and to plot the figures.
+This repository contains the MATLAB code used to run the classification analysis performed and to plot the main figure of the paper.
 The data contained in the dataset cannot be directly used with this code, as they were first subjected to steps of visual inspection, removal of poor-quality data, and preprocessing, as described in the manuscript.
 The way the data should be organized in matlab is reported in the main function 'movement_classification_kinectome_vs_PCA' 
 You can run the code calling this function as:
