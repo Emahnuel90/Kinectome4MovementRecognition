@@ -26,6 +26,12 @@ function T = movement_classification_kinectome_vs_PCA(data, labels)
 %        a pairwise correlation matrix representing inter-body-part coordination.
 %      - *PCA*: Principal Component Analysis is applied to the original matrices,
 %        and components are retained until 95% of the total variance is explained.
+%      - *UMAP*: dimensionality of data was reduced using Uniform Manifold Approximation and Projection (UMAP).
+%        For UMAP it was used:
+%        Connor Meehan, Jonathan Ebrahimian, Wayne Moore, and Stephen Meehan (2025).
+%        Uniform Manifold Approximation and Projection (UMAP)
+%        (https://www.mathworks.com/matlabcentral/fileexchange/71902),
+%        MATLAB Central File Exchange.
 %
 %   2. **Classification**:
 %      - An SVM (Support Vector Machine) classifier with 10-fold cross-validation
@@ -136,9 +142,17 @@ movs = temp_movs(newLabelsOrder,:);
 movkin = temp_movkin(newLabelsOrder,:);
 Y_shuffle = Y(newLabelsOrder);
 
+%UMAP parameters:
+params.umapDims = 40;     % prova 10-50 in base al dataset
+params.umapNN = 15;
+params.umapMinDist = 0.3;
+params.svmKernel   = 'rbf'; %'linear'
+params.svmBoxC     = 1;
+params.svmKScale   = 1; %'auto'
 
 cvp = cvpartition(Y_shuffle, 'KFold', nkfold);
 PCApred = cell(1, size(movs,1));
+UMAPpred = cell(1, size(movs,1));
 KINpred = cell(1, size(movs,1));
 for zkf = 1:nkfold
     disp(zkf)
@@ -149,10 +163,13 @@ for zkf = 1:nkfold
     movs_test = movs(cvp.test(zkf),:);
     movkin_test = movkin(cvp.test(zkf),:);
     
-    [trainedModel_Scale_PCA_SVM2, ~, ~] = trainClassifier_Scale_PCA_SVM_crossval(movs_train, Y_train',exp_var);
+    [trainedModel_Scale_PCA_SVM2, ~] = trainClassifier_Scale_PCA_SVM_crossval(movs_train, Y_train',exp_var);
     [yfit,~] = trainedModel_Scale_PCA_SVM2.predictFcn(movs_test);
     PCApred(cvp.test(zkf)) = yfit;
     
+    yPred = umap_svm_cv_classifier(movs_train, movs_test, Y_train, MOV_NAMES, params);
+    UMAPpred(cvp.test(zkf)) = yPred;
+
     template = templateSVM(...
         'KernelFunction', 'linear', ...
         'PolynomialOrder', [], ...
@@ -164,7 +181,7 @@ for zkf = 1:nkfold
         movkin_train, ...
         Y_train, ...
         'Learners', template, ...
-        'Coding', 'onevsone', ...
+        'Coding', 'onevsall', ...
         'ClassNames', labels);
     
     KINpred(cvp.test(zkf)) = predict(classificationSVM, movkin_test);
@@ -177,20 +194,26 @@ for zzmovna = 1:length(labels)
     ACCU_PCA_sep(zzmovna) = sum(strcmp(Y_shuffle(masks),PCApred(masks))) / size(MOVS_angles,1);
 end
 
+ACCU_UMAP_sep = zeros(size(labels));
+for zzmovna = 1:length(labels)
+    masks = strcmp(Y_shuffle,labels{zzmovna});
+    ACCU_UMAP_sep(zzmovna) = sum(strcmp(Y_shuffle(masks),UMAPpred(masks))) / size(MOVS_angles,1);
+end
+
 ACCU_KIN_sep = zeros(size(labels));
 for zzmovna = 1:length(labels)
     masks = strcmp(Y_shuffle,labels{zzmovna});
     ACCU_KIN_sep(zzmovna) = sum(strcmp(Y_shuffle(masks),KINpred(masks))) / size(MOVS_angles,1);
 end
 
-allres = {ACCU_PCA_sep, ACCU_KIN_sep};
-rescol = {[0 0 1],[1 .5 0]};
+allres = {ACCU_PCA_sep, ACCU_KIN_sep, ACCU_KIN_sep};
+rescol = {[0 0 1], [0.5 0 1], [1 .5 0]};
 figure, hold on
 for zz1 = 1:size(allres,2)
     swarmchart(zz1*ones(1,length(ACCU_KIN_sep)),allres{zz1},[],rescol{zz1},'filled','MarkerFaceAlpha',0.5,'MarkerEdgeAlpha',0.5);
 end
 xticks(1:2)
-xticklabels({'PCA','KIN'})
+xticklabels({'PCA', 'UMAP', 'KIN'})
 xlim([0 3])
 ylabel('Accuracy')
 ylim([0 1.02])
@@ -205,22 +228,32 @@ ConfMat.RowSummary = 'row-normalized';
 title(' KIN - SVM - shuffle')
 
 figure
+ConfMat = confusionchart(Y_shuffle, UMAPpred);
+ConfMat.RowSummary = 'row-normalized';
+title([' UMAP - SVM - shuffle | variance: ' num2str(exp_var)])
+
+figure
 ConfMat = confusionchart(Y_shuffle, PCApred);
 ConfMat.RowSummary = 'row-normalized';
 title([' PCA - SVM - shuffle | variance: ' num2str(exp_var)])
 
-mean_accu = mean(ACCU_PCA_sep);
-median_accu = median(ACCU_PCA_sep);
-std_accu = std(ACCU_PCA_sep);
+mean_pca_accu = mean(ACCU_PCA_sep);
+median_pca_accu = median(ACCU_PCA_sep);
+std_pca_accu = std(ACCU_PCA_sep);
 
-mean_kin = mean(ACCU_KIN_sep);
-median_kin = median(ACCU_KIN_sep);
-std_kin = std(ACCU_KIN_sep);
+mean_umap_accu = mean(ACCU_UMAP_sep);
+median_umap_accu = median(ACCU_UMAP_sep);
+std_umap_accu = std(ACCU_UMAP_sep);
+
+mean_kin_accu = mean(ACCU_KIN_sep);
+median_kin_accu = median(ACCU_KIN_sep);
+std_kin_accu = std(ACCU_KIN_sep);
 
 % Output in table
 T = table( ...
-    [mean_accu; median_accu; std_accu], ...
-    [mean_kin; median_kin; std_kin], ...
-    'VariableNames', {'ACCU_PCA_sep', 'KIN_PCA_sep'}, ...
+    [mean_pca_accu; median_pca_accu; std_pca_accu], ...
+    [mean_umap_accu; median_umap_accu; std_umap_accu], ...
+    [mean_kin_accu; median_kin_accu; std_kin_accu], ...
+    'VariableNames', {'ACCU_PCA_sep', 'ACCU_UMAP_sep', 'KIN_PCA_sep'}, ...
     'RowNames', {'Mean', 'Median', 'StdDev'});
 end

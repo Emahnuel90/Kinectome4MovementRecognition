@@ -1,4 +1,4 @@
-function [trainedClassifier, validationAccuracy, numComponentsToKeep] = trainClassifier_Scale_PCA_SVM_crossval(trainingData, responseData, exp_var)
+function [trainedClassifier, numComponentsToKeep] = trainClassifier_Scale_PCA_SVM_crossval(trainingData, responseData, exp_var)
 % [trainedClassifier, validationAccuracy] = trainClassifier(trainingData,
 % responseData)
 % Returns a trained classifier and its accuracy. This code recreates the
@@ -84,7 +84,6 @@ explainedVarianceToKeepAsFraction = exp_var/100;
 numComponentsToKeep = find(cumsum(explained)/sum(explained) >= explainedVarianceToKeepAsFraction, 1);
 pcaCoefficients = pcaCoefficients(:,1:numComponentsToKeep);
 predictors = [array2table(pcaScores(:,1:numComponentsToKeep)), predictors(:, isCategoricalPredictor)];
-isCategoricalPredictor = [false(1,numComponentsToKeep), true(1,sum(isCategoricalPredictor))];
 
 % Train a classifier
 % This code specifies all the classifier options and trains the classifier.
@@ -98,7 +97,7 @@ classificationSVM = fitcecoc(...
     predictors, ...
     response, ...
     'Learners', template, ...
-    'Coding', 'onevsone', ...
+    'Coding', 'onevsall', ...
     'ClassNames', classNames);
 
 % Create the result struct with predict function
@@ -117,70 +116,3 @@ trainedClassifier.HowToPredict = sprintf('To make predictions on a new predictor
 % Extract predictors and response
 % This code processes the data into the right shape for training the
 % model.
-% Convert input to table
-
-% Perform cross-validation
-KFolds = 10;
-cvp = cvpartition(response, 'KFold', KFolds);
-% Initialize the predictions to the proper sizes
-validationPredictions = response;
-numObservations = size(predictors, 1);
-numClasses = length(classNames);
-validationScores = NaN(numObservations, numClasses);
-for fold = 1:KFolds
-    trainingPredictors = predictors(cvp.training(fold), :);
-    trainingResponse = response(cvp.training(fold), :);
-    foldIsCategoricalPredictor = isCategoricalPredictor;
-
-    % Apply a PCA to the predictor matrix.
-    % Run PCA on numeric predictors only. Categorical predictors are passed through PCA untouched.
-    isCategoricalPredictorBeforePCA = foldIsCategoricalPredictor;
-    numericPredictors = trainingPredictors(:, ~foldIsCategoricalPredictor);
-    numericPredictors = table2array(varfun(@double, numericPredictors));
-    % 'inf' values have to be treated as missing data for PCA.
-    numericPredictors(isinf(numericPredictors)) = NaN;
-    [pcaCoefficients, pcaScores, ~, ~, explained, pcaCenters] = pca(...
-        numericPredictors,'Rows','pairwise');
-    % Keep enough components to explain the desired amount of variance.
-    explainedVarianceToKeepAsFraction = exp_var/100;
-    numComponentsToKeep = find(cumsum(explained)/sum(explained) >= explainedVarianceToKeepAsFraction, 1);
-    pcaCoefficients = pcaCoefficients(:,1:numComponentsToKeep);
-    trainingPredictors = [array2table(pcaScores(:,1:numComponentsToKeep)), trainingPredictors(:, foldIsCategoricalPredictor)];
-    foldIsCategoricalPredictor = [false(1,numComponentsToKeep), true(1,sum(foldIsCategoricalPredictor))];
-
-    % Train a classifier
-    % This code specifies all the classifier options and trains the classifier.
-    template = templateSVM(...
-        'KernelFunction', 'linear', ...
-        'PolynomialOrder', [], ...
-        'KernelScale', 1, ...
-        'BoxConstraint', 1, ...
-        'Standardize', true); % same with false
-    classificationSVM = fitcecoc(...
-        trainingPredictors, ...
-        trainingResponse, ...
-        'Learners', template, ...
-        'Coding', 'onevsone', ...
-        'ClassNames', classNames);
-
-    % Create the result struct with predict function
-    pcaTransformationFcn = @(x) [ array2table((table2array(varfun(@double, x(:, ~isCategoricalPredictorBeforePCA))) - pcaCenters) * pcaCoefficients), x(:,isCategoricalPredictorBeforePCA) ];
-    svmPredictFcn = @(x) predict(classificationSVM, x);
-    validationPredictFcn = @(x) svmPredictFcn(pcaTransformationFcn(x));
-
-    % Add additional fields to the result struct
-
-    % Compute validation predictions
-    validationPredictors = predictors(cvp.test(fold), :);
-    [foldPredictions, foldScores] = validationPredictFcn(validationPredictors);
-
-    % Store predictions in the original order
-    validationPredictions(cvp.test(fold), :) = foldPredictions;
-    validationScores(cvp.test(fold), :) = foldScores;
-end
-
-% Compute validation accuracy
-correctPredictions = strcmp( strtrim(validationPredictions), strtrim(response));
-isMissing = cellfun(@(x) all(isspace(x)), response, 'UniformOutput', true);
-correctPredictions = correctPredictions(~isMissing);
-validationAccuracy = sum(correctPredictions)/length(correctPredictions);
